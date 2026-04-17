@@ -1,0 +1,10 @@
+target/
+*.class
+*.jar
+*.iml
+.idea/
+*.png
+*.svg
+output.dot
+output_summary.txt
+.DS_Store
