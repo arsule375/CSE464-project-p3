@@ -242,14 +242,7 @@ public class GraphManager {
                 visited.add(neighbor);
                 parent.put(neighbor, current);
                 if (neighbor.equals(dstLabel)) {
-                    List<Node> route = new ArrayList<>();
-                    String step = dstLabel;
-                    while (step != null) {
-                        route.add(new Node(step));
-                        step = parent.get(step);
-                    }
-                    Collections.reverse(route);
-                    return new Path(route);
+                    return reconstructPath(srcLabel, dstLabel, parent);
                 }
                 queue.add(neighbor);
             }
@@ -264,11 +257,15 @@ public class GraphManager {
         boolean found = depthFirstSearch(srcLabel, dstLabel, adjacency, visited, parent);
         if (!found) return null;
 
+        return reconstructPath(srcLabel, dstLabel, parent);
+    }
+
+    private Path reconstructPath(String srcLabel, String dstLabel, Map<String, String> parent) {
         List<Node> route = new ArrayList<>();
-        String current = dstLabel;
-        while (current != null) {
-            route.add(new Node(current));
-            current = parent.get(current);
+        String step = dstLabel;
+        while (step != null) {
+            route.add(new Node(step));
+            step = parent.get(step);
         }
         Collections.reverse(route);
         return new Path(route);
