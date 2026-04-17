@@ -134,9 +134,7 @@ public class GraphManager {
      * @throws IllegalArgumentException if label is invalid or node does not exist
      */
     public boolean removeNode(String label) {
-        if (label == null || label.isEmpty()) {
-            throw new IllegalArgumentException("Node label cannot be null or empty");
-        }
+        validateLabel(label, "Node label");
         boolean removed = nodes.remove(label);
         if (!removed) {
             throw new IllegalArgumentException("Node does not exist: " + label);
@@ -299,15 +297,20 @@ public class GraphManager {
      * @throws IllegalArgumentException if labels are invalid or edge does not exist
      */
     public boolean removeEdge(String srcLabel, String dstLabel) {
-        if (srcLabel == null || dstLabel == null || srcLabel.isEmpty() || dstLabel.isEmpty()) {
-            throw new IllegalArgumentException("Source and destination labels cannot be null or empty");
-        }
+        validateLabel(srcLabel, "Source label");
+        validateLabel(dstLabel, "Destination label");
 
         String edgeKey = srcLabel + "->" + dstLabel;
         if (!edges.contains(edgeKey)) {
             throw new IllegalArgumentException("Edge does not exist: " + edgeKey);
         }
         return edges.remove(edgeKey);
+    }
+
+    private void validateLabel(String label, String fieldName) {
+        if (label == null || label.isEmpty()) {
+            throw new IllegalArgumentException(fieldName + " cannot be null or empty");
+        }
     }
 
     // -------------------------------------------------------------------------

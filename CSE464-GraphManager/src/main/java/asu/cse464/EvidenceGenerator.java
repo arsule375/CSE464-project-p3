@@ -61,30 +61,15 @@ public class EvidenceGenerator {
         );
 
         GraphManager bfsPathGraph = new GraphManager();
-        addPathEdges(bfsPathGraph, bfsPath);
+        bfsPath.addEdgesToGraph(bfsPathGraph);
         bfsPathGraph.outputGraphics(evidenceDir.resolve("bfs-path.png").toString(), "png");
 
         GraphManager dfsPathGraph = new GraphManager();
-        addPathEdges(dfsPathGraph, dfsPath);
+        dfsPath.addEdgesToGraph(dfsPathGraph);
         dfsPathGraph.outputGraphics(evidenceDir.resolve("dfs-path.png").toString(), "png");
 
         String summary = "BFS path: " + bfsPath + System.lineSeparator()
             + "DFS path: " + dfsPath + System.lineSeparator();
         Files.writeString(evidenceDir.resolve("search-paths.txt"), summary);
-    }
-
-    private static void addPathEdges(GraphManager gm, Path path) {
-        if (path == null || path.getNodes().isEmpty()) {
-            return;
-        }
-
-        if (path.getNodes().size() == 1) {
-            gm.addNode(path.getNodes().get(0).getLabel());
-            return;
-        }
-
-        for (int i = 0; i < path.getNodes().size() - 1; i++) {
-            gm.addEdge(path.getNodes().get(i).getLabel(), path.getNodes().get(i + 1).getLabel());
-        }
     }
 }
