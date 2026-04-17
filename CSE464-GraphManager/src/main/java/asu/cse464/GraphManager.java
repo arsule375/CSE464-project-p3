@@ -200,14 +200,7 @@ public class GraphManager {
             return new Path(Collections.singletonList(new Node(srcLabel)));
         }
 
-        Map<String, List<String>> adjacency = new LinkedHashMap<>();
-        for (String node : nodes) {
-            adjacency.put(node, new ArrayList<>());
-        }
-        for (String edge : edges) {
-            String[] parts = edge.split("->");
-            adjacency.get(parts[0]).add(parts[1]);
-        }
+        Map<String, List<String>> adjacency = buildAdjacencyMap();
 
         if (algo == Algorithm.BFS) {
             return bfsSearch(srcLabel, dstLabel, adjacency);
@@ -220,6 +213,18 @@ public class GraphManager {
      */
     public Path GraphSearch(Node src, Node dst) {
         return GraphSearch(src, dst, Algorithm.BFS);
+    }
+
+    private Map<String, List<String>> buildAdjacencyMap() {
+        Map<String, List<String>> adjacency = new LinkedHashMap<>();
+        for (String node : nodes) {
+            adjacency.put(node, new ArrayList<>());
+        }
+        for (String edge : edges) {
+            String[] parts = edge.split("->");
+            adjacency.get(parts[0]).add(parts[1]);
+        }
+        return adjacency;
     }
 
     private Path bfsSearch(String srcLabel, String dstLabel, Map<String, List<String>> adjacency) {
