@@ -321,17 +321,7 @@ public class GraphManager {
      * @throws IOException if write fails
      */
     public void outputDOTGraph(String path) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        sb.append("digraph ").append(graphName).append(" {\n");
-        for (String node : nodes) {
-            sb.append("    ").append(node).append(";\n");
-        }
-        for (String edge : edges) {
-            String[] parts = edge.split("->");
-            sb.append("    ").append(parts[0]).append(" -> ").append(parts[1]).append(";\n");
-        }
-        sb.append("}\n");
-        Files.writeString(Paths.get(path), sb.toString());
+        Files.writeString(Paths.get(path), buildDOTString());
     }
 
     /**
@@ -342,19 +332,7 @@ public class GraphManager {
      * @throws IOException if render or write fails
      */
     public void outputGraphics(String path, String format) throws IOException {
-        // Build a DOT string, then render via graphviz-java
-        StringBuilder sb = new StringBuilder();
-        sb.append("digraph ").append(graphName).append(" {\n");
-        for (String node : nodes) {
-            sb.append("    ").append(node).append(";\n");
-        }
-        for (String edge : edges) {
-            String[] parts = edge.split("->");
-            sb.append("    ").append(parts[0]).append(" -> ").append(parts[1]).append(";\n");
-        }
-        sb.append("}\n");
-
-        MutableGraph mg = new Parser().read(sb.toString());
+        MutableGraph mg = new Parser().read(buildDOTString());
 
         Format gvFormat;
         switch (format.toLowerCase()) {
@@ -369,6 +347,20 @@ public class GraphManager {
         }
 
         Graphviz.fromGraph(mg).render(gvFormat).toFile(new File(path));
+    }
+
+    private String buildDOTString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("digraph ").append(graphName).append(" {\n");
+        for (String node : nodes) {
+            sb.append("    ").append(node).append(";\n");
+        }
+        for (String edge : edges) {
+            String[] parts = edge.split("->");
+            sb.append("    ").append(parts[0]).append(" -> ").append(parts[1]).append(";\n");
+        }
+        sb.append("}\n");
+        return sb.toString();
     }
 
     // -------------------------------------------------------------------------
