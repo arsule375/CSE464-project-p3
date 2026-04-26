@@ -61,15 +61,21 @@ public class EvidenceGenerator {
         );
 
         GraphManager bfsPathGraph = new GraphManager();
-        bfsPath.addEdgesToGraph(bfsPathGraph);
+        if (bfsPath != null) {
+            bfsPath.addEdgesToGraph(bfsPathGraph);
+        }
         bfsPathGraph.outputGraphics(evidenceDir.resolve("bfs-path.png").toString(), "png");
 
         GraphManager dfsPathGraph = new GraphManager();
-        dfsPath.addEdgesToGraph(dfsPathGraph);
+        if (dfsPath != null) {
+            dfsPath.addEdgesToGraph(dfsPathGraph);
+        }
         dfsPathGraph.outputGraphics(evidenceDir.resolve("dfs-path.png").toString(), "png");
 
-        String summary = "BFS path: " + bfsPath + System.lineSeparator()
-            + "DFS path: " + dfsPath + System.lineSeparator();
+        String bfsSummary = bfsPath == null ? "no path found" : bfsPath.toString();
+        String dfsSummary = dfsPath == null ? "no path found" : dfsPath.toString();
+        String summary = "BFS path: " + bfsSummary + System.lineSeparator()
+            + "DFS path: " + dfsSummary + System.lineSeparator();
         Files.writeString(evidenceDir.resolve("search-paths.txt"), summary);
     }
 }

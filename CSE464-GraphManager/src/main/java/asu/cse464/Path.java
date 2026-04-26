@@ -23,6 +23,9 @@ public class Path {
     }
 
     public void addEdgesToGraph(GraphManager gm) {
+        if (gm == null) {
+            throw new IllegalArgumentException("GraphManager cannot be null");
+        }
         if (nodes.isEmpty()) return;
         if (nodes.size() == 1) {
             gm.addNode(nodes.get(0).getLabel());

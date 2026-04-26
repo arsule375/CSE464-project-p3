@@ -84,7 +84,8 @@ public class GraphManager {
         sb.append("Number of Edges: ").append(edges.size()).append("\n");
         sb.append("Edges:\n");
         for (String edge : edges) {
-            String[] parts = edge.split("->");
+            String[] parts = edge.split("->", 2);
+            if (parts.length < 2) continue;
             sb.append("  ").append(parts[0]).append(" -> ").append(parts[1]).append("\n");
         }
         return sb.toString();
@@ -141,7 +142,8 @@ public class GraphManager {
         }
 
         edges.removeIf(edge -> {
-            String[] parts = edge.split("->");
+            String[] parts = edge.split("->", 2);
+            if (parts.length < 2) return false;
             return parts[0].equals(label) || parts[1].equals(label);
         });
         return true;
@@ -219,8 +221,9 @@ public class GraphManager {
             adjacency.put(node, new ArrayList<>());
         }
         for (String edge : edges) {
-            String[] parts = edge.split("->");
-            adjacency.get(parts[0]).add(parts[1]);
+            String[] parts = edge.split("->", 2);
+            if (parts.length < 2) continue;
+            adjacency.computeIfAbsent(parts[0], key -> new ArrayList<>()).add(parts[1]);
         }
         return adjacency;
     }
@@ -240,7 +243,7 @@ public class GraphManager {
                 visited.add(neighbor);
                 parent.put(neighbor, current);
                 if (neighbor.equals(dstLabel)) {
-                    return reconstructPath(srcLabel, dstLabel, parent);
+                    return reconstructPath(dstLabel, parent);
                 }
                 queue.add(neighbor);
             }
@@ -255,10 +258,10 @@ public class GraphManager {
         boolean found = depthFirstSearch(srcLabel, dstLabel, adjacency, visited, parent);
         if (!found) return null;
 
-        return reconstructPath(srcLabel, dstLabel, parent);
+        return reconstructPath(dstLabel, parent);
     }
 
-    private Path reconstructPath(String srcLabel, String dstLabel, Map<String, String> parent) {
+    private Path reconstructPath(String dstLabel, Map<String, String> parent) {
         List<Node> route = new ArrayList<>();
         String step = dstLabel;
         while (step != null) {
@@ -359,7 +362,8 @@ public class GraphManager {
             sb.append("    ").append(node).append(";\n");
         }
         for (String edge : edges) {
-            String[] parts = edge.split("->");
+            String[] parts = edge.split("->", 2);
+            if (parts.length < 2) continue;
             sb.append("    ").append(parts[0]).append(" -> ").append(parts[1]).append(";\n");
         }
         sb.append("}\n");
