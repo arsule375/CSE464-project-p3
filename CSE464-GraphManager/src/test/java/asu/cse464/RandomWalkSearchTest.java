@@ -46,6 +46,7 @@ public class RandomWalkSearchTest {
         assertTrue(printed.contains("visiting Path{nodes=[Node{a}]}"));
         assertTrue(printed.contains("visiting Path{nodes=[Node{a}, Node{b}]}"));
         assertTrue(printed.contains("visiting Path{nodes=[Node{a}, Node{b}, Node{c}]}"));
+        assertTrue(printed.contains("Path{nodes=[Node{a}, Node{b}, Node{c}]}"));
     }
 
     @Test
@@ -68,5 +69,62 @@ public class RandomWalkSearchTest {
         assertNull(search.search(null, "c", Collections.emptyMap()));
         assertNull(search.search("a", "c", null));
         assertNull(search.search("a", "c", Collections.singletonMap("a", Collections.emptyList())));
+    }
+
+    @Test
+    public void testRandomWalkSearch_IgnoresNullNeighborEntries() {
+        Map<String, List<String>> adjacency = new LinkedHashMap<>();
+        adjacency.put("a", Arrays.asList(null, "b"));
+        adjacency.put("b", Arrays.asList("c"));
+        adjacency.put("c", Collections.emptyList());
+
+        RandomWalkSearch search = new RandomWalkSearch(new Random(0));
+
+        Path path = search.search("a", "c", adjacency);
+        assertNotNull(path);
+        assertEquals("a", path.getNodes().get(0).getLabel());
+        assertEquals("b", path.getNodes().get(1).getLabel());
+        assertEquals("c", path.getNodes().get(2).getLabel());
+    }
+
+    @Test
+    public void testRandomWalkSearch_DifferentRandomChoicesProduceDifferentTraces() {
+        Map<String, List<String>> adjacency = new LinkedHashMap<>();
+        adjacency.put("a", Arrays.asList("b", "e"));
+        adjacency.put("b", Arrays.asList("c"));
+        adjacency.put("e", Arrays.asList("c"));
+        adjacency.put("c", Collections.emptyList());
+
+        Random alwaysFirst = new Random() {
+            @Override
+            public int nextInt(int bound) {
+                return 0;
+            }
+        };
+        Random alwaysSecond = new Random() {
+            @Override
+            public int nextInt(int bound) {
+                return bound - 1;
+            }
+        };
+
+        String firstTrace = captureTrace(new RandomWalkSearch(alwaysFirst), adjacency);
+        String secondTrace = captureTrace(new RandomWalkSearch(alwaysSecond), adjacency);
+
+        assertTrue(firstTrace.contains("visiting Path{nodes=[Node{a}, Node{b}]}"));
+        assertTrue(secondTrace.contains("visiting Path{nodes=[Node{a}, Node{e}]}"));
+    }
+
+    private String captureTrace(RandomWalkSearch search, Map<String, List<String>> adjacency) {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        PrintStream originalOut = System.out;
+        System.setOut(new PrintStream(output));
+        try {
+            Path path = search.search("a", "c", adjacency);
+            assertNotNull(path);
+        } finally {
+            System.setOut(originalOut);
+        }
+        return output.toString();
     }
 }

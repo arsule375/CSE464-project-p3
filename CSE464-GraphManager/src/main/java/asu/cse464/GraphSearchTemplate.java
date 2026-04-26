@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public abstract class GraphSearchTemplate implements SearchStrategy {
@@ -38,11 +39,14 @@ public abstract class GraphSearchTemplate implements SearchStrategy {
 
     protected List<String> getUnvisitedNeighbors(String node,
                                                  Map<String, List<String>> adjacency,
-                                                 List<String> visitedOrder) {
-        List<String> visited = visitedOrder == null ? Collections.emptyList() : visitedOrder;
+                                                 Set<String> visited) {
+        Set<String> visitedNodes = visited == null ? Collections.emptySet() : visited;
         List<String> unvisited = new ArrayList<>();
         for (String neighbor : adjacency.getOrDefault(node, Collections.emptyList())) {
-            if (!visited.contains(neighbor)) {
+            if (neighbor == null) {
+                continue;
+            }
+            if (!visitedNodes.contains(neighbor)) {
                 unvisited.add(neighbor);
             }
         }
