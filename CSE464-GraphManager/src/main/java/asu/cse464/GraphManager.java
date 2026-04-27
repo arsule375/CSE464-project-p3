@@ -84,7 +84,8 @@ public class GraphManager {
         sb.append("Number of Edges: ").append(edges.size()).append("\n");
         sb.append("Edges:\n");
         for (String edge : edges) {
-            String[] parts = edge.split("->");
+            String[] parts = edge.split("->", 2);
+            if (parts.length < 2) continue;
             sb.append("  ").append(parts[0]).append(" -> ").append(parts[1]).append("\n");
         }
         return sb.toString();
@@ -134,16 +135,15 @@ public class GraphManager {
      * @throws IllegalArgumentException if label is invalid or node does not exist
      */
     public boolean removeNode(String label) {
-        if (label == null || label.isEmpty()) {
-            throw new IllegalArgumentException("Node label cannot be null or empty");
-        }
+        validateLabel(label, "Node label");
         boolean removed = nodes.remove(label);
         if (!removed) {
             throw new IllegalArgumentException("Node does not exist: " + label);
         }
 
         edges.removeIf(edge -> {
-            String[] parts = edge.split("->");
+            String[] parts = edge.split("->", 2);
+            if (parts.length < 2) return false;
             return parts[0].equals(label) || parts[1].equals(label);
         });
         return true;
@@ -200,14 +200,7 @@ public class GraphManager {
             return new Path(Collections.singletonList(new Node(srcLabel)));
         }
 
-        Map<String, List<String>> adjacency = new LinkedHashMap<>();
-        for (String node : nodes) {
-            adjacency.put(node, new ArrayList<>());
-        }
-        for (String edge : edges) {
-            String[] parts = edge.split("->");
-            adjacency.get(parts[0]).add(parts[1]);
-        }
+        Map<String, List<String>> adjacency = buildAdjacencyMap();
 
         if (algo == Algorithm.BFS) {
             return bfsSearch(srcLabel, dstLabel, adjacency);
@@ -220,6 +213,19 @@ public class GraphManager {
      */
     public Path GraphSearch(Node src, Node dst) {
         return GraphSearch(src, dst, Algorithm.BFS);
+    }
+
+    private Map<String, List<String>> buildAdjacencyMap() {
+        Map<String, List<String>> adjacency = new LinkedHashMap<>();
+        for (String node : nodes) {
+            adjacency.put(node, new ArrayList<>());
+        }
+        for (String edge : edges) {
+            String[] parts = edge.split("->", 2);
+            if (parts.length < 2) continue;
+            adjacency.computeIfAbsent(parts[0], key -> new ArrayList<>()).add(parts[1]);
+        }
+        return adjacency;
     }
 
     private Path bfsSearch(String srcLabel, String dstLabel, Map<String, List<String>> adjacency) {
@@ -237,14 +243,7 @@ public class GraphManager {
                 visited.add(neighbor);
                 parent.put(neighbor, current);
                 if (neighbor.equals(dstLabel)) {
-                    List<Node> route = new ArrayList<>();
-                    String step = dstLabel;
-                    while (step != null) {
-                        route.add(new Node(step));
-                        step = parent.get(step);
-                    }
-                    Collections.reverse(route);
-                    return new Path(route);
+                    return reconstructPath(dstLabel, parent);
                 }
                 queue.add(neighbor);
             }
@@ -259,11 +258,15 @@ public class GraphManager {
         boolean found = depthFirstSearch(srcLabel, dstLabel, adjacency, visited, parent);
         if (!found) return null;
 
+        return reconstructPath(dstLabel, parent);
+    }
+
+    private Path reconstructPath(String dstLabel, Map<String, String> parent) {
         List<Node> route = new ArrayList<>();
-        String current = dstLabel;
-        while (current != null) {
-            route.add(new Node(current));
-            current = parent.get(current);
+        String step = dstLabel;
+        while (step != null) {
+            route.add(new Node(step));
+            step = parent.get(step);
         }
         Collections.reverse(route);
         return new Path(route);
@@ -297,15 +300,20 @@ public class GraphManager {
      * @throws IllegalArgumentException if labels are invalid or edge does not exist
      */
     public boolean removeEdge(String srcLabel, String dstLabel) {
-        if (srcLabel == null || dstLabel == null || srcLabel.isEmpty() || dstLabel.isEmpty()) {
-            throw new IllegalArgumentException("Source and destination labels cannot be null or empty");
-        }
+        validateLabel(srcLabel, "Source label");
+        validateLabel(dstLabel, "Destination label");
 
         String edgeKey = srcLabel + "->" + dstLabel;
         if (!edges.contains(edgeKey)) {
             throw new IllegalArgumentException("Edge does not exist: " + edgeKey);
         }
         return edges.remove(edgeKey);
+    }
+
+    private void validateLabel(String label, String fieldName) {
+        if (label == null || label.isEmpty()) {
+            throw new IllegalArgumentException(fieldName + " cannot be null or empty");
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -319,17 +327,7 @@ public class GraphManager {
      * @throws IOException if write fails
      */
     public void outputDOTGraph(String path) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        sb.append("digraph ").append(graphName).append(" {\n");
-        for (String node : nodes) {
-            sb.append("    ").append(node).append(";\n");
-        }
-        for (String edge : edges) {
-            String[] parts = edge.split("->");
-            sb.append("    ").append(parts[0]).append(" -> ").append(parts[1]).append(";\n");
-        }
-        sb.append("}\n");
-        Files.writeString(Paths.get(path), sb.toString());
+        Files.writeString(Paths.get(path), buildDOTString());
     }
 
     /**
@@ -340,19 +338,7 @@ public class GraphManager {
      * @throws IOException if render or write fails
      */
     public void outputGraphics(String path, String format) throws IOException {
-        // Build a DOT string, then render via graphviz-java
-        StringBuilder sb = new StringBuilder();
-        sb.append("digraph ").append(graphName).append(" {\n");
-        for (String node : nodes) {
-            sb.append("    ").append(node).append(";\n");
-        }
-        for (String edge : edges) {
-            String[] parts = edge.split("->");
-            sb.append("    ").append(parts[0]).append(" -> ").append(parts[1]).append(";\n");
-        }
-        sb.append("}\n");
-
-        MutableGraph mg = new Parser().read(sb.toString());
+        MutableGraph mg = new Parser().read(buildDOTString());
 
         Format gvFormat;
         switch (format.toLowerCase()) {
@@ -367,6 +353,21 @@ public class GraphManager {
         }
 
         Graphviz.fromGraph(mg).render(gvFormat).toFile(new File(path));
+    }
+
+    private String buildDOTString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("digraph ").append(graphName).append(" {\n");
+        for (String node : nodes) {
+            sb.append("    ").append(node).append(";\n");
+        }
+        for (String edge : edges) {
+            String[] parts = edge.split("->", 2);
+            if (parts.length < 2) continue;
+            sb.append("    ").append(parts[0]).append(" -> ").append(parts[1]).append(";\n");
+        }
+        sb.append("}\n");
+        return sb.toString();
     }
 
     // -------------------------------------------------------------------------
