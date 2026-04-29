@@ -22,6 +22,20 @@ public class Path {
         return nodes;
     }
 
+    public void addEdgesToGraph(GraphManager gm) {
+        if (gm == null) {
+            throw new IllegalArgumentException("GraphManager cannot be null");
+        }
+        if (nodes.isEmpty()) return;
+        if (nodes.size() == 1) {
+            gm.addNode(nodes.get(0).getLabel());
+            return;
+        }
+        for (int i = 0; i < nodes.size() - 1; i++) {
+            gm.addEdge(nodes.get(i).getLabel(), nodes.get(i + 1).getLabel());
+        }
+    }
+
     @Override
     public String toString() {
         return nodes.stream().map(Node::getLabel).collect(Collectors.joining(" -> "));
