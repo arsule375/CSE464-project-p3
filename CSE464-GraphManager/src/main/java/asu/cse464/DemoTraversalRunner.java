@@ -7,6 +7,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -35,10 +36,10 @@ public class DemoTraversalRunner {
         Map<String, List<String>> adjacency = buildAlphabeticalAdjacency(gm);
 
         System.out.println("\nBFS:");
-        runBfsWithVisitHistory(SOURCE, TARGET, adjacency);
+        runBfsWithVisitHistory(SOURCE, TARGET, adjacency, gm);
 
         System.out.println("\nDFS:");
-        runDfsWithVisitHistory(SOURCE, TARGET, adjacency);
+        runDfsWithVisitHistory(SOURCE, TARGET, adjacency, gm);
 
         System.out.println("\nRandom Walk (no backtracking, unvisited neighbors only):");
         runRandomWalkDemo(SOURCE, TARGET, adjacency);
@@ -72,15 +73,15 @@ public class DemoTraversalRunner {
 
     private static void runBfsWithVisitHistory(String src,
                                                String dst,
-                                               Map<String, List<String>> adjacency) {
+                                               Map<String, List<String>> adjacency,
+                                               GraphManager gm) {
         Queue<String> queue = new ArrayDeque<>();
         Set<String> visited = new HashSet<>();
-        List<String> visitHistory = new ArrayList<>();
+        Map<String, String> parent = new HashMap<>();
 
         queue.add(src);
         visited.add(src);
-        visitHistory.add(src);
-        printVisitHistory(visitHistory);
+        printPathProgression(reconstructPath(src, src, parent));
 
         if (src.equals(dst)) {
             System.out.println("Found target node: " + dst);
@@ -95,11 +96,15 @@ public class DemoTraversalRunner {
                 }
                 visited.add(neighbor);
                 queue.add(neighbor);
-                visitHistory.add(neighbor);
-                printVisitHistory(visitHistory);
+                parent.put(neighbor, current);
+                printPathProgression(reconstructPath(src, neighbor, parent));
 
                 if (neighbor.equals(dst)) {
                     System.out.println("Found target node: " + dst);
+                    asu.cse464.Path finalPath = gm.GraphSearch(new Node(src), new Node(dst), GraphManager.Algorithm.BFS);
+                    if (finalPath != null) {
+                        System.out.println("Final Path: " + formatFinalPath(finalPath));
+                    }
                     return;
                 }
             }
@@ -110,10 +115,11 @@ public class DemoTraversalRunner {
 
     private static void runDfsWithVisitHistory(String src,
                                                String dst,
-                                               Map<String, List<String>> adjacency) {
+                                               Map<String, List<String>> adjacency,
+                                               GraphManager gm) {
         Deque<String> stack = new ArrayDeque<>();
         Set<String> visited = new HashSet<>();
-        List<String> visitHistory = new ArrayList<>();
+        Map<String, String> parent = new HashMap<>();
 
         stack.push(src);
         while (!stack.isEmpty()) {
@@ -122,10 +128,13 @@ public class DemoTraversalRunner {
                 continue;
             }
 
-            visitHistory.add(current);
-            printVisitHistory(visitHistory);
+            printPathProgression(reconstructPath(src, current, parent));
             if (current.equals(dst)) {
                 System.out.println("Found target node: " + dst);
+                asu.cse464.Path finalPath = gm.GraphSearch(new Node(src), new Node(dst), GraphManager.Algorithm.DFS);
+                if (finalPath != null) {
+                    System.out.println("Final Path: " + formatFinalPath(finalPath));
+                }
                 return;
             }
 
@@ -133,6 +142,9 @@ public class DemoTraversalRunner {
             for (int i = neighbors.size() - 1; i >= 0; i--) {
                 String next = neighbors.get(i);
                 if (!visited.contains(next)) {
+                    if (!parent.containsKey(next)) {
+                        parent.put(next, current);
+                    }
                     stack.push(next);
                 }
             }
@@ -215,5 +227,33 @@ public class DemoTraversalRunner {
 
     private static void printVisitHistory(List<String> history) {
         System.out.println("Visit Node History: " + String.join("-", history));
+    }
+
+    private static void printPathProgression(List<String> path) {
+        System.out.println("Path Progression: " + String.join("-", path));
+    }
+
+    private static List<String> reconstructPath(String src,
+                                                String current,
+                                                Map<String, String> parent) {
+        List<String> route = new ArrayList<>();
+        String step = current;
+        while (step != null) {
+            route.add(step);
+            if (step.equals(src)) {
+                break;
+            }
+            step = parent.get(step);
+        }
+        Collections.reverse(route);
+        return route;
+    }
+
+    private static String formatFinalPath(asu.cse464.Path path) {
+        List<String> labels = new ArrayList<>();
+        for (Node n : path.getNodes()) {
+            labels.add(n.getLabel());
+        }
+        return String.join("-", labels);
     }
 }
