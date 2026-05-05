@@ -1,0 +1,33 @@
+Random Walk (no backtracking, unvisited neighbors only):
+Run 1:
+Visit Node History: a
+Visit Node History: a-e
+Visit Node History: a-e-f
+Visit Node History: a-e-f-h
+Found target node: h
+Run 2:
+Visit Node History: a
+Visit Node History: a-e
+Visit Node History: a-e-f
+Visit Node History: a-e-f-h
+Found target node: h
+Run 3:
+Visit Node History: a
+Visit Node History: a-e
+Visit Node History: a-e-g
+Visit Node History: a-e-g-h
+Found target node: h
+Run 4:
+Visit Node History: a
+Visit Node History: a-e
+Visit Node History: a-e-g
+Visit Node History: a-e-g-h
+Found target node: h
+Run 5:
+Visit Node History: a
+Visit Node History: a-e
+Visit Node History: a-e-f
+Visit Node History: a-e-f-h
+Found target node: h
+Random Walk runs completed: 5
+Distinct successful paths found: 2

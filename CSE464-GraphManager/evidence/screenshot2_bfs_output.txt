@@ -1,0 +1,12 @@
+BFS:
+Path Progression: a
+Path Progression: a-b
+Path Progression: a-e
+Path Progression: a-b-c
+Path Progression: a-e-f
+Path Progression: a-e-g
+Path Progression: a-b-c-d
+Path Progression: a-e-f-h
+Found target node: h
+Final Path: a-e-f-h
+

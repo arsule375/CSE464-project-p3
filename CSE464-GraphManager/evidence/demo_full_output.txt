@@ -1,0 +1,69 @@
+Input.dot content:
+digraph {
+    a -> b;
+    b -> c;
+    c -> d;
+    d -> a;
+    a -> e;
+    e -> f;
+    e -> g;
+    f -> h;
+    g -> h;
+}
+
+BFS:
+Path Progression: a
+Path Progression: a-b
+Path Progression: a-e
+Path Progression: a-b-c
+Path Progression: a-e-f
+Path Progression: a-e-g
+Path Progression: a-b-c-d
+Path Progression: a-e-f-h
+Found target node: h
+Final Path: a-e-f-h
+
+DFS:
+Path Progression: a
+Path Progression: a-b
+Path Progression: a-b-c
+Path Progression: a-b-c-d
+Path Progression: a-e
+Path Progression: a-e-f
+Path Progression: a-e-f-h
+Found target node: h
+Final Path: a-e-f-h
+
+Random Walk (no backtracking, unvisited neighbors only):
+Run 1:
+Visit Node History: a
+Visit Node History: a-e
+Visit Node History: a-e-f
+Visit Node History: a-e-f-h
+Found target node: h
+Run 2:
+Visit Node History: a
+Visit Node History: a-e
+Visit Node History: a-e-f
+Visit Node History: a-e-f-h
+Found target node: h
+Run 3:
+Visit Node History: a
+Visit Node History: a-e
+Visit Node History: a-e-g
+Visit Node History: a-e-g-h
+Found target node: h
+Run 4:
+Visit Node History: a
+Visit Node History: a-e
+Visit Node History: a-e-g
+Visit Node History: a-e-g-h
+Found target node: h
+Run 5:
+Visit Node History: a
+Visit Node History: a-e
+Visit Node History: a-e-f
+Visit Node History: a-e-f-h
+Found target node: h
+Random Walk runs completed: 5
+Distinct successful paths found: 2
